@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Epicure Robotics — Kiosk Operations SOP</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Nunito:wght@300;400;600;700&display=swap');
+
+:root {
+  --bg: #0e0f0d;
+  --surface: #151714;
+  --card: #1b1e19;
+  --border: #2a2e26;
+  --accent: #a8d166;
+  --accent2: #f5c842;
+  --accent3: #e8714a;
+  --text: #e8ead4;
+  --muted: #6b7060;
+  --done: #4a7c1f;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  padding: 0 0 60px;
+}
+
+/* Background texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 20%, rgba(168,209,102,0.04) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(245,200,66,0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+header {
+  background: linear-gradient(135deg, #1a1f16 0%, #111410 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 32px 22px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-mark {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--accent) 0%, #6ab52a 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0e0f0d;
+  font-family: 'DM Serif Display', serif;
+  flex-shrink: 0;
+}
+
+.brand-text h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  color: var(--text);
+  line-height: 1;
+}
+.brand-text p {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-top: 3px;
+  font-family: 'DM Mono', monospace;
+}
+
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.progress-bar-bg {
+  width: 160px;
+  height: 6px;
+  background: var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.progress-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  min-width: 50px;
+  text-align: right;
+}
+
+.date-display {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ── LOCATION TABS ── */
+.location-bar {
+  padding: 16px 32px 0;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.loc-tab {
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+.loc-tab:hover { border-color: var(--accent); color: var(--accent); }
+.loc-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0e0f0d;
+  font-weight: 700;
+}
+
+/* ── MAIN LAYOUT ── */
+main {
+  padding: 24px 32px;
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+}
+
+/* ── SHIFT SELECTOR ── */
+.shift-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.shift-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.25s;
+  text-align: center;
+}
+.shift-btn:hover { border-color: var(--accent); color: var(--text); }
+.shift-btn.active { border-color: var(--accent); background: rgba(168,209,102,0.08); color: var(--accent); }
+.shift-btn .shift-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+.shift-btn .shift-name { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; font-family: 'DM Mono', monospace; }
+.shift-btn .shift-time { font-size: 10px; color: var(--muted); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+/* ── SECTION ── */
+.section {
+  margin-bottom: 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  overflow: hidden;
+  transition: border-color 0.3s;
+}
+.section:hover { border-color: #3a3e34; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid var(--border);
+}
+.section-header:hover { background: rgba(255,255,255,0.02); }
+
+.section-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.section-info { flex: 1; }
+.section-info h3 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text);
+}
+.section-info p {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-family: 'DM Mono', monospace;
+}
+
+.section-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-count {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+.section-chevron {
+  color: var(--muted);
+  font-size: 12px;
+  transition: transform 0.25s;
+}
+.section.collapsed .section-chevron { transform: rotate(-90deg); }
+
+.section-progress {
+  width: 60px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.section-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+/* ── CHECKLIST ITEMS ── */
+.checklist {
+  padding: 8px 0;
+}
+.section.collapsed .checklist { display: none; }
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 11px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.item:last-child { border-bottom: none; }
+.item:hover { background: rgba(255,255,255,0.025); }
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 11px;
+}
+.item.checked .checkbox {
+  background: var(--done);
+  border-color: var(--done);
+  color: white;
+}
+.item.checked .item-text { color: var(--muted); text-decoration: line-through; }
+.item.checked .item-note { opacity: 0.4; }
+
+.item-content { flex: 1; }
+.item-text {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1.4;
+  transition: color 0.2s;
+}
+.item-note {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+  font-family: 'DM Mono', monospace;
+  line-height: 1.5;
+  transition: opacity 0.2s;
+}
+
+.item-tag {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.tag-critical { background: rgba(232,113,74,0.15); color: var(--accent3); border: 1px solid rgba(232,113,74,0.3); }
+.tag-hygiene { background: rgba(168,209,102,0.12); color: var(--accent); border: 1px solid rgba(168,209,102,0.25); }
+.tag-check { background: rgba(245,200,66,0.12); color: var(--accent2); border: 1px solid rgba(245,200,66,0.25); }
+.tag-ops { background: rgba(100,150,220,0.12); color: #8ab4f8; border: 1px solid rgba(100,150,220,0.25); }
+
+/* ── INCIDENT LOG ── */
+.incident-section {
+  margin-top: 20px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  overflow: hidden;
+}
+.incident-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.incident-header h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+}
+.incident-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+
+.incident-row {
+  display: flex;
+  gap: 10px;
+}
+.incident-row input, .incident-row select, .incident-row textarea {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 9px 12px;
+  font-size: 12px;
+  font-family: 'Nunito', sans-serif;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.incident-row input:focus, .incident-row select:focus, .incident-row textarea:focus {
+  border-color: var(--accent);
+}
+.incident-row select option { background: #1b1e19; }
+textarea { resize: vertical; min-height: 60px; }
+
+.log-btn {
+  background: var(--accent);
+  color: #0e0f0d;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Nunito', sans-serif;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: opacity 0.2s;
+  align-self: flex-start;
+}
+.log-btn:hover { opacity: 0.85; }
+
+.log-entries { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.log-entry {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 11px;
+  border-left: 3px solid var(--accent3);
+  font-family: 'DM Mono', monospace;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.log-entry strong { color: var(--text); }
+
+/* ── RESET BTN ── */
+.reset-wrap {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0 4px;
+}
+.reset-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 11px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  transition: all 0.2s;
+}
+.reset-btn:hover { border-color: var(--accent3); color: var(--accent3); }
+
+/* ── COMPLETION BANNER ── */
+.complete-banner {
+  display: none;
+  background: linear-gradient(135deg, rgba(168,209,102,0.12), rgba(74,124,31,0.08));
+  border: 1px solid rgba(168,209,102,0.3);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  text-align: center;
+  animation: slideIn 0.4s ease;
+}
+.complete-banner.show { display: block; }
+.complete-banner h3 { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--accent); }
+.complete-banner p { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+@media (max-width: 600px) {
+  header { padding: 16px; }
+  main { padding: 16px; }
+  .shift-selector { flex-wrap: wrap; }
+  .shift-btn { min-width: 80px; }
+  .progress-bar-bg { width: 100px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo-mark">E</div>
+    <div class="brand-text">
+      <h1>Epicure Robotics</h1>
+      <p>Kiosk Operations SOP</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="progress-wrap">
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="globalBar"></div></div>
+      <div class="progress-label" id="globalLabel">0 / 0</div>
+    </div>
+    <div class="date-display" id="dateDisplay"></div>
+  </div>
+</header>
+
+<!-- Location Tabs -->
+<div class="location-bar">
+  <button class="loc-tab active" onclick="setLocation(this, 'Location 1 — Koramangala')">📍 Koramangala</button>
+  <button class="loc-tab" onclick="setLocation(this, 'Location 2 — Indiranagar')">📍 Indiranagar</button>
+  <button class="loc-tab" onclick="setLocation(this, 'Location 3 — HSR Layout')">📍 HSR Layout</button>
+  <button class="loc-tab" onclick="setLocation(this, 'Location 4 — Whitefield')">📍 Whitefield</button>
+</div>
+
+<main>
+
+  <!-- Shift Selector -->
+  <div class="shift-selector">
+    <div class="shift-btn active" onclick="setShift(this, 'opening')">
+      <span class="shift-icon">🌅</span>
+      <div class="shift-name">Opening</div>
+      <div class="shift-time">7:00 AM</div>
+    </div>
+    <div class="shift-btn" onclick="setShift(this, 'midday')">
+      <span class="shift-icon">☀️</span>
+      <div class="shift-name">Midday</div>
+      <div class="shift-time">12:00 PM</div>
+    </div>
+    <div class="shift-btn" onclick="setShift(this, 'closing')">
+      <span class="shift-icon">🌙</span>
+      <div class="shift-name">Closing</div>
+      <div class="shift-time">9:00 PM</div>
+    </div>
+  </div>
+
+  <!-- Completion Banner -->
+  <div class="complete-banner" id="completeBanner">
+    <h3>✅ Shift Complete!</h3>
+    <p id="completeText">All tasks checked for this shift.</p>
+  </div>
+
+  <div class="reset-wrap">
+    <button class="reset-btn" onclick="resetAll()">↺ Reset Shift</button>
+  </div>
+
+  <!-- Dynamic checklist container -->
+  <div id="checklistContainer"></div>
+
+  <!-- Incident Log -->
+  <div class="incident-section">
+    <div class="incident-header">
+      <span>⚠️</span>
+      <h3>Incident / Issue Log</h3>
+    </div>
+    <div class="incident-body">
+      <div class="incident-row">
+        <input type="text" id="incidentTime" placeholder="Time (e.g. 10:35 AM)" style="max-width:140px">
+        <select id="incidentType" style="max-width:160px">
+          <option value="">Issue Type</option>
+          <option>Machine Downtime</option>
+          <option>Ingredient Stockout</option>
+          <option>Payment Failure</option>
+          <option>Hygiene Concern</option>
+          <option>Customer Complaint</option>
+          <option>Other</option>
+        </select>
+        <input type="text" id="incidentPerson" placeholder="Reported by">
+      </div>
+      <div class="incident-row">
+        <textarea id="incidentDesc" placeholder="Describe the issue and action taken..."></textarea>
+      </div>
+      <button class="log-btn" onclick="logIncident()">+ Log Entry</button>
+      <div class="log-entries" id="logEntries"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── DATA ──
+const shifts = {
+  opening: [
+    {
+      title: "Machine Startup & Hardware Check",
+      icon: "🤖",
+      color: "#a8d166",
+      sub: "PARK system boot sequence",
+      items: [
+        { text: "Power on PARK kiosk and wait for system boot", note: "Check all indicator lights are green", tag: "critical" },
+        { text: "Verify touchscreen display is responsive", note: "Test 3 random menu interactions", tag: "check" },
+        { text: "Run self-diagnostic from admin panel", note: "Note any error codes — escalate if RED alerts", tag: "critical" },
+        { text: "Check gantry movement — no obstruction or noise", note: "0.01mm accuracy — alert if any grinding sound", tag: "critical" },
+        { text: "Verify dispenser nozzles are clean and unclogged", note: "Solids, liquids, powders, dense fluids", tag: "hygiene" },
+        { text: "Confirm network/connectivity status is active", note: "Needed for payments and analytics sync", tag: "ops" },
+      ]
+    },
+    {
+      title: "Ingredient Loading & Inventory",
+      icon: "🧪",
+      color: "#f5c842",
+      sub: "Pre-shift stock check",
+      items: [
+        { text: "Check stock levels for all 40+ beverage ingredients", note: "Flag anything below 20% — reorder threshold", tag: "ops" },
+        { text: "Load/refill ingredient containers as needed", note: "Maintain 0.1g dispensing precision — don't overfill", tag: "check" },
+        { text: "Check coconut water stock and freshness", note: "Verify expiry — discard anything over 48hrs opened", tag: "hygiene" },
+        { text: "Log opening stock in inventory sheet", note: "Time-stamp all entries for traceability", tag: "ops" },
+        { text: "Check ice / chilled compartment temperature", note: "Target: 2–4°C", tag: "check" },
+      ]
+    },
+    {
+      title: "Hygiene & Food Safety",
+      icon: "🧼",
+      color: "#8ab4f8",
+      sub: "FSSAI compliance checks",
+      items: [
+        { text: "Sanitize all external touch surfaces", note: "Touchscreen, payment terminal, kiosk body", tag: "hygiene" },
+        { text: "Wipe down dispenser area and drip tray", note: "Use food-safe sanitizer only", tag: "hygiene" },
+        { text: "Check and empty waste/disposal compartment", note: "Should not be more than 50% full at shift start", tag: "hygiene" },
+        { text: "Ensure cup/lid/straw supply is stocked", note: "Minimum 100 cups per shift start", tag: "ops" },
+        { text: "Verify staff has washed hands before operations", note: "Log sign-off", tag: "hygiene" },
+      ]
+    },
+    {
+      title: "Payments & POS Readiness",
+      icon: "💳",
+      color: "#e8714a",
+      sub: "Financial ops check",
+      items: [
+        { text: "Test UPI / card payment terminal with ₹1 test transaction", note: "Reverse immediately after test", tag: "critical" },
+        { text: "Confirm opening float cash (if applicable)", note: "Log exact amount in finance sheet", tag: "ops" },
+        { text: "Verify pricing on screen matches current menu", note: "Check any promo codes are active/inactive correctly", tag: "check" },
+        { text: "Confirm daily sales target for this location", note: "Communicate to on-site staff", tag: "ops" },
+      ]
+    },
+  ],
+  midday: [
+    {
+      title: "Mid-Shift Machine Check",
+      icon: "🔧",
+      color: "#a8d166",
+      sub: "Performance & uptime",
+      items: [
+        { text: "Check kiosk uptime — confirm no error alerts", note: "Review admin panel for any fault codes", tag: "critical" },
+        { text: "Test 2 sample dispensing cycles", note: "Check accuracy and output quality", tag: "check" },
+        { text: "Inspect nozzles for any drips or residue build-up", note: "Clean immediately if found", tag: "hygiene" },
+        { text: "Confirm connectivity / payment terminal still active", note: "Ping test or small transaction check", tag: "ops" },
+      ]
+    },
+    {
+      title: "Inventory Restock",
+      icon: "📦",
+      color: "#f5c842",
+      sub: "Top-up ingredients",
+      items: [
+        { text: "Re-check all ingredient levels", note: "Restock anything below 30% mid-shift", tag: "ops" },
+        { text: "Replenish cups, lids, straws if below 50 units", note: "Call ops team for emergency restock if needed", tag: "ops" },
+        { text: "Empty drip tray and clean dispenser zone", note: "Mandatory mid-shift hygiene step", tag: "hygiene" },
+        { text: "Log mid-shift inventory top-up", note: "Record quantities added for cost tracking", tag: "ops" },
+      ]
+    },
+    {
+      title: "Customer Experience Check",
+      icon: "⭐",
+      color: "#8ab4f8",
+      sub: "CX & feedback",
+      items: [
+        { text: "Review any customer complaints or feedback logged", note: "Action within same shift if possible", tag: "check" },
+        { text: "Observe 2–3 customer interactions with kiosk", note: "Note any UI confusion or friction points", tag: "check" },
+        { text: "Check kiosk area is clean and presentable", note: "No spills, clutter, or signage damage", tag: "hygiene" },
+      ]
+    },
+    {
+      title: "Finance — Mid-Shift Revenue Check",
+      icon: "📊",
+      color: "#e8714a",
+      sub: "Sales tracking",
+      items: [
+        { text: "Pull mid-day sales report from admin panel", note: "Log in daily finance tracker", tag: "ops" },
+        { text: "Check if on-track for daily revenue target", note: "Flag if below 40% target by noon", tag: "critical" },
+        { text: "Verify no failed/disputed transactions", note: "Escalate chargebacks immediately", tag: "critical" },
+      ]
+    },
+  ],
+  closing: [
+    {
+      title: "Machine Shutdown Sequence",
+      icon: "🔌",
+      color: "#a8d166",
+      sub: "Safe power-down",
+      items: [
+        { text: "Run end-of-day diagnostic and capture report", note: "Screenshot and save to ops folder", tag: "critical" },
+        { text: "Run auto-cleaning cycle on dispensers", note: "Follow PARK system cleaning protocol", tag: "hygiene" },
+        { text: "Drain and rinse liquid dispensers", note: "Prevents residue and contamination overnight", tag: "hygiene" },
+        { text: "Power down kiosk via admin panel (not hard switch)", note: "Ensure all data is synced before shutdown", tag: "critical" },
+        { text: "Cover kiosk with dust cover", note: "Protect hardware overnight", tag: "ops" },
+      ]
+    },
+    {
+      title: "End-of-Day Inventory Count",
+      icon: "🗂️",
+      color: "#f5c842",
+      sub: "Closing stock audit",
+      items: [
+        { text: "Count and log all remaining ingredient quantities", note: "Compare against opening stock + restocks", tag: "ops" },
+        { text: "Identify waste / spillage for the day", note: "Enter in waste log with cause noted", tag: "ops" },
+        { text: "Store perishables correctly — seal and refrigerate", note: "Coconut water max 24hrs from opening", tag: "hygiene" },
+        { text: "Flag any ingredients to reorder for next day", note: "Send reorder request to ops team by 9:30 PM", tag: "critical" },
+      ]
+    },
+    {
+      title: "Hygiene — Deep Clean",
+      icon: "✨",
+      color: "#8ab4f8",
+      sub: "End-of-day sanitation",
+      items: [
+        { text: "Full wipe-down of kiosk exterior", note: "All panels, screen, payment terminal", tag: "hygiene" },
+        { text: "Clean and sanitize drip trays and waste compartments", note: "Replace liners if used", tag: "hygiene" },
+        { text: "Mop floor area around kiosk", note: "Check for any liquid spills underneath", tag: "hygiene" },
+        { text: "Dispose of single-use items (cups, straws, wipes)", note: "Separate dry/wet waste per BBMP rules", tag: "hygiene" },
+      ]
+    },
+    {
+      title: "Finance — Daily Close",
+      icon: "💰",
+      color: "#e8714a",
+      sub: "Revenue reconciliation",
+      items: [
+        { text: "Pull final day's sales report", note: "Total orders, revenue, avg order value", tag: "ops" },
+        { text: "Reconcile UPI + card + cash collections", note: "Any mismatch → flag immediately", tag: "critical" },
+        { text: "Submit daily finance report to ops & finance lead", note: "Use standard daily report template", tag: "ops" },
+        { text: "Note any machine downtime duration for the day", note: "Needed for uptime % tracking", tag: "ops" },
+        { text: "Close out petty cash and log expenses", note: "Receipts to be submitted within 24hrs", tag: "ops" },
+      ]
+    },
+  ]
+};
+
+let currentShift = 'opening';
+let currentLocation = 'Location 1 — Koramangala';
+const checkedState = {};
+
+function stateKey(shift, loc, secIdx, itemIdx) {
+  return `${shift}||${loc}||${secIdx}||${itemIdx}`;
+}
+
+function setLocation(el, loc) {
+  document.querySelectorAll('.loc-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentLocation = loc;
+  renderChecklist();
+}
+
+function setShift(el, shift) {
+  document.querySelectorAll('.shift-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentShift = shift;
+  renderChecklist();
+}
+
+function renderChecklist() {
+  const container = document.getElementById('checklistContainer');
+  container.innerHTML = '';
+  const sections = shifts[currentShift];
+
+  sections.forEach((sec, si) => {
+    const div = document.createElement('div');
+    div.className = 'section';
+    div.id = `sec-${si}`;
+
+    const checkedCount = sec.items.filter((_, ii) => checkedState[stateKey(currentShift, currentLocation, si, ii)]).length;
+    const pct = Math.round((checkedCount / sec.items.length) * 100);
+    const allDone = checkedCount === sec.items.length;
+
+    div.innerHTML = `
+      <div class="section-header" onclick="toggleSection(${si})">
+        <div class="section-icon" style="background:${sec.color}22; color:${sec.color}">${sec.icon}</div>
+        <div class="section-info">
+          <h3>${sec.title}</h3>
+          <p>${sec.sub}</p>
+        </div>
+        <div class="section-meta">
+          <div class="section-progress">
+            <div class="section-progress-fill" style="width:${pct}%; background:${allDone ? '#4a7c1f' : sec.color}"></div>
+          </div>
+          <div class="section-count" style="color:${allDone ? '#a8d166' : ''}">${checkedCount}/${sec.items.length}</div>
+          <div class="section-chevron">▾</div>
+        </div>
+      </div>
+      <div class="checklist">
+        ${sec.items.map((item, ii) => {
+          const key = stateKey(currentShift, currentLocation, si, ii);
+          const checked = checkedState[key] || false;
+          return `
+            <div class="item ${checked ? 'checked' : ''}" id="item-${si}-${ii}" onclick="toggleItem(${si},${ii})">
+              <div class="checkbox">${checked ? '✓' : ''}</div>
+              <div class="item-content">
+                <div class="item-text">${item.text}</div>
+                <div class="item-note">${item.note}</div>
+              </div>
+              <span class="item-tag tag-${item.tag}">${item.tag}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  updateGlobalProgress();
+}
+
+function toggleSection(si) {
+  document.getElementById(`sec-${si}`).classList.toggle('collapsed');
+}
+
+function toggleItem(si, ii) {
+  const key = stateKey(currentShift, currentLocation, si, ii);
+  checkedState[key] = !checkedState[key];
+  renderChecklist();
+}
+
+function updateGlobalProgress() {
+  const sections = shifts[currentShift];
+  let total = 0, done = 0;
+  sections.forEach((sec, si) => {
+    sec.items.forEach((_, ii) => {
+      total++;
+      if (checkedState[stateKey(currentShift, currentLocation, si, ii)]) done++;
+    });
+  });
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('globalBar').style.width = pct + '%';
+  document.getElementById('globalLabel').textContent = `${done} / ${total}`;
+
+  const banner = document.getElementById('completeBanner');
+  if (done === total && total > 0) {
+    banner.classList.add('show');
+    document.getElementById('completeText').textContent =
+      `All ${total} tasks complete for ${currentShift} shift at ${currentLocation}.`;
+  } else {
+    banner.classList.remove('show');
+  }
+}
+
+function resetAll() {
+  const sections = shifts[currentShift];
+  sections.forEach((sec, si) => {
+    sec.items.forEach((_, ii) => {
+      delete checkedState[stateKey(currentShift, currentLocation, si, ii)];
+    });
+  });
+  renderChecklist();
+}
+
+function logIncident() {
+  const time = document.getElementById('incidentTime').value.trim();
+  const type = document.getElementById('incidentType').value;
+  const person = document.getElementById('incidentPerson').value.trim();
+  const desc = document.getElementById('incidentDesc').value.trim();
+  if (!type || !desc) { alert('Please fill in issue type and description.'); return; }
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `<strong>[${time || 'No time'}] ${type}</strong> — ${desc}${person ? ` <em>(by ${person})</em>` : ''} · <span style="color:#4a4e3a">${currentLocation} · ${currentShift}</span>`;
+  document.getElementById('logEntries').prepend(entry);
+  document.getElementById('incidentTime').value = '';
+  document.getElementById('incidentType').value = '';
+  document.getElementById('incidentPerson').value = '';
+  document.getElementById('incidentDesc').value = '';
+}
+
+// Date display
+const d = new Date();
+document.getElementById('dateDisplay').textContent =
+  d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+
+// Init
+renderChecklist();
+</script>
+</body>
+</html>
